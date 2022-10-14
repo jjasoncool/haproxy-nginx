@@ -4,6 +4,9 @@
 #
 ###################################
 
+# set PATH for all session
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
 DOMAINS=(
     "www.skjan.cf"
     "demo.skjan.cf"
