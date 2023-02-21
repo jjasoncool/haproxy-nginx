@@ -46,7 +46,7 @@ then
 fi
 
 # print update time
-echo "Update Time: $(date -d "now" +"%Y-%m-%d %H:%M:%S")"
+echo "User: $(id -u -n) Update Time: $(date -d "now" +"%Y-%m-%d %H:%M:%S")"
 
 
 for domain in "${DOMAINS[@]}"
