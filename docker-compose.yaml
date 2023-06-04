@@ -67,5 +67,5 @@ volumes:
 
 networks:
     default:
-        external:
-            name: ${NET_WORK}
+      name: ${NET_WORK}
+      external: true

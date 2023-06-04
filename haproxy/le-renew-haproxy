@@ -13,6 +13,7 @@ DOMAINS=(
     "cloud.skjan.cf"
     "jasontech.cf"
     "www.jasontech.cf"
+    "keycloak.jasontech.cf"
     "cloud.mingmei.cf"
 )
 

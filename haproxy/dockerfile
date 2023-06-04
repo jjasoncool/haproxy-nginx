@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y bc certbot cron vim
 COPY ./le-renew-haproxy /usr/local/sbin/le-renew-haproxy
 RUN chmod +x /usr/local/sbin/le-renew-haproxy
 COPY ./haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+COPY ./cert-list.cfg /etc/haproxy/cert-list.cfg
 
 # cron 設定定期自動更新
 # .---------------- minute (0 - 59)
