@@ -3,7 +3,7 @@ FROM haproxy:${HA_VERSION}
 
 USER root
 RUN mkdir -p /var/lib/haproxy/
-RUN apt-get update && apt-get install -y bc certbot cron vim
+RUN apt-get update && apt-get install -y bc certbot cron vim supervisor
 
 COPY ./le-renew-haproxy /usr/local/sbin/le-renew-haproxy
 RUN chmod +x /usr/local/sbin/le-renew-haproxy
@@ -23,4 +23,8 @@ RUN chmod +x /etc/cron.d/cron-update-cert
 RUN touch /var/log/cron.log
 
 # tail 為了避免container完成退出
-CMD haproxy -f /usr/local/etc/haproxy/haproxy.cfg && cron && tail -f /var/log/cron.log
+# CMD haproxy -f /usr/local/etc/haproxy/haproxy.cfg && cron && tail -f /var/log/cron.log
+# 改成 supervisor 多進程單行CMD會出問題，有LOG卻沒更新
+RUN mkdir /var/log/supervisord /var/run/supervisord
+COPY supervisord.conf /supervisord.conf
+CMD ["/usr/bin/supervisord", "-c", "/supervisord.conf"]

@@ -54,6 +54,7 @@ for domain in "${DOMAINS[@]}"
 do
   CERT_FILE="/etc/letsencrypt/live/$domain/fullchain.pem"
   KEY_FILE="/etc/letsencrypt/live/$domain/privkey.pem"
+  CERT_LIST_FILE="/etc/haproxy/cert-list.cfg"
 
   ##################################
   #
