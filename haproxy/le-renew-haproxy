@@ -8,13 +8,7 @@
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 DOMAINS=(
-    "www.skjan.cf"
-    "demo.skjan.cf"
-    "cloud.skjan.cf"
-    "jasontech.cf"
-    "www.jasontech.cf"
-    "keycloak.jasontech.cf"
-    "cloud.mingmei.cf"
+    all_domains
 )
 
 EMAIL="forwork.jan@gmail.com"

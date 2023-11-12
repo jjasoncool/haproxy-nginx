@@ -1,3 +1,4 @@
 config/*
 certs/*
 .env
+haproxy/cert-list.cfg

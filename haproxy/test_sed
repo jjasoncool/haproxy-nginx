@@ -1,0 +1,17 @@
+FROM haproxy:latest
+
+USER root
+
+COPY ./le-renew-haproxy /usr/local/sbin/le-renew-haproxy
+RUN chmod +x /usr/local/sbin/le-renew-haproxy
+COPY ./cert-list.cfg /etc/haproxy/cert-list.cfg
+
+# 在容器中执行 sed 命令来处理文件
+RUN DOMAINS=$(sed -n 's|/etc/haproxy/certs/\(.*\).pem|\1|p' /etc/haproxy/cert-list.cfg | tr '\n' ' ') \
+    && echo "$DOMAINS" > /tmp/domains.txt
+RUN sed -i "s|all_domains|$(cat /tmp/domains.txt)|g" /usr/local/sbin/le-renew-haproxy
+
+# 打印修改后的 config.txt 内容
+# CMD cat /tmp/domains.txt
+CMD cat /usr/local/sbin/le-renew-haproxy
+# CMD ["sleep", "infinity"]
