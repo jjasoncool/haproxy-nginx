@@ -136,6 +136,7 @@ do
   fi
 done
 
+# uncomment bind * 443, make certs work
 sed -i 's/^#\( *bind *\*:443 ssl crt-list \/etc\/haproxy\/cert-list.cfg\)/\1/' /usr/local/etc/haproxy/haproxy.cfg
 
 if [ "$RELOAD" = true ]
