@@ -11,8 +11,9 @@ COPY ./haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
 COPY ./cert-list.cfg /etc/haproxy/cert-list.cfg
 
 # 取出的domains，換行改成空格並存為暫存檔案
-RUN DOMAINS=$(sed -n 's|/etc/haproxy/certs/\(.*\).pem|\1|p' /etc/haproxy/cert-list.cfg | tr '\n' ' ') \
+RUN DOMAINS=$(sed -n 's|^/etc/haproxy/certs/\(.*\).pem|\1|p' /etc/haproxy/cert-list.cfg | tr '\n' ' ') \
     && echo "$DOMAINS" > /tmp/domains.txt
+
 # 從暫存檔案中更新le-renew-haproxy
 RUN sed -i "s|all_domains|$(cat /tmp/domains.txt)|g" /usr/local/sbin/le-renew-haproxy
 
