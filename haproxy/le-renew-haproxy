@@ -21,7 +21,8 @@ WEB_ROOT="/usr/share/nginx/html/"
 #
 #####################################
 sed -i 's|^ *bind   \*:443 ssl crt-list /etc/haproxy/cert-list.cfg|#&|' /usr/local/etc/haproxy/haproxy.cfg
-haproxy -f /usr/local/etc/haproxy/haproxy.cfg
+# haproxy -f /usr/local/etc/haproxy/haproxy.cfg
+supervisorctl restart haproxy
 
 #When cert is down to this many days
 #It is allowed to renew
@@ -52,6 +53,22 @@ fi
 # print update time
 echo "User: $(id -u -n) Update Time: $(date -d "now" +"%Y-%m-%d %H:%M:%S")"
 
+# define combine certs function
+function combine_certs() {
+  local domain=$1
+  mkdir -p /etc/haproxy/certs/  #location to place combine cert
+  if [ -f "/etc/letsencrypt/live/$domain/fullchain.pem" ] && [ -s "/etc/letsencrypt/live/$domain/fullchain.pem" ] \
+      && [ -f "/etc/letsencrypt/live/$domain/privkey.pem" ] && [ -s "/etc/letsencrypt/live/$domain/privkey.pem" ]; then
+      COMBINED_FILE="/etc/haproxy/certs/${domain}.pem"
+      echo "Creating $COMBINED_FILE with latest certs..."
+      cat /etc/letsencrypt/live/$domain/fullchain.pem \
+          /etc/letsencrypt/live/$domain/privkey.pem > $COMBINED_FILE
+      # update RELOAD status
+      RELOAD=true
+  else
+      echo "Error: Certificate files for $domain are missing or empty. Skipping..."
+  fi
+}
 
 for domain in "${DOMAINS[@]}"
 do
@@ -80,15 +97,8 @@ do
     # Reload HAProxy
     #
     ###################################
-    mkdir -p /etc/haproxy/certs/  #location to place combine cert
-    RELOAD=true
-    COMBINED_FILE="/etc/haproxy/certs/${domain}.pem"
-    echo "Creating $COMBINED_FILE with latest certs..."
-    cat /etc/letsencrypt/live/$domain/fullchain.pem \
-        /etc/letsencrypt/live/$domain/privkey.pem > $COMBINED_FILE
+    combine_certs $domain
 
-
-    RELOAD=true
   else
     ##################################
     #
@@ -124,14 +134,8 @@ do
       # Reload HAProxy
       #
       ###################################
-      mkdir -p /etc/haproxy/certs/  #location to place combine cert
-      RELOAD=true
-      COMBINED_FILE="/etc/haproxy/certs/${domain}.pem"
-      echo "Creating $COMBINED_FILE with latest certs..."
-      cat /etc/letsencrypt/live/$domain/fullchain.pem \
-          /etc/letsencrypt/live/$domain/privkey.pem > $COMBINED_FILE
+      combine_certs $domain
 
-      echo "Renewal process finished for domain $domain"
     fi
   fi
 done
@@ -146,5 +150,6 @@ then
   echo " === Reloading HAProxy === "
   echo " =                       = "
   echo " ========================= "
-  haproxy -f /usr/local/etc/haproxy/haproxy.cfg -sf $(cat /var/run/haproxy.pid)
+#   haproxy -f /usr/local/etc/haproxy/haproxy.cfg -sf $(cat /var/run/haproxy.pid)
+  supervisorctl restart haproxy
 fi
