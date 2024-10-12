@@ -2,4 +2,5 @@
 # Please make sure the paths below are correct and the certificates exist.
 # example: /[path]/demosite.com.pem
 
-/etc/haproxy/certs/demo.mysites.com.pem
+/etc/haproxy/certs/demo.mysites1.com.pem
+/etc/haproxy/certs/demo.mysites2.com.pem

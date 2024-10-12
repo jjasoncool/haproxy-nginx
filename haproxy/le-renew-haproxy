@@ -15,21 +15,36 @@ DOMAINS=(
 EMAIL="forwork.jan@gmail.com"
 WEB_ROOT="/usr/share/nginx/html/"
 
-#####################################
-#
-# Comment bind * 443 and reload config
-#
-#####################################
-sed -i 's|^ *bind   \*:443 ssl crt-list /etc/haproxy/cert-list.cfg|#&|' /usr/local/etc/haproxy/haproxy.cfg
-# haproxy -f /usr/local/etc/haproxy/haproxy.cfg
-supervisorctl restart haproxy
-
 #When cert is down to this many days
 #It is allowed to renew
 EXP_LIMIT=30;
 
 #Only reload HAProxy if a cert was created/updated
 RELOAD=false
+
+#####################################
+#
+# Comment bind * 443 and reload config
+#
+#####################################
+# read cert-list.cfg
+missing_files=()
+while read -r line; do
+  # ignore comment lines and empty lines
+  [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+
+  # check file exists
+  if [[ ! -f "$line" ]]; then
+    missing_files+=("$line")
+  fi
+done < /etc/haproxy/cert-list.cfg
+
+if [[ ${#missing_files[@]} -gt 0 ]]; then
+  echo "Missing some certs, we need to comment certs binding."
+  sed -i 's|^ *bind   \*:443 ssl crt-list /etc/haproxy/cert-list.cfg|#&|' /usr/local/etc/haproxy/haproxy.cfg
+  # haproxy -f /usr/local/etc/haproxy/haproxy.cfg
+  supervisorctl restart haproxy
+fi
 
 #####################################
 #
