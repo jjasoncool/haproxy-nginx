@@ -8,6 +8,8 @@
 # set PATH for all session
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
+# TODO: 直接讀取 CERT_LIST_FILE 了吧
+CERT_LIST_FILE="/etc/haproxy/cert-list.cfg"
 DOMAINS=(
     all_domains
 )
@@ -89,7 +91,6 @@ for domain in "${DOMAINS[@]}"
 do
   CERT_FILE="/etc/letsencrypt/live/$domain/fullchain.pem"
   KEY_FILE="/etc/letsencrypt/live/$domain/privkey.pem"
-  CERT_LIST_FILE="/etc/haproxy/cert-list.cfg"
 
   ##################################
   #
