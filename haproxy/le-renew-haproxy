@@ -99,6 +99,7 @@ do
   ##################################
   if [ ! -f $CERT_FILE ]; then
     echo "Creating certificate for domain $domain."
+    echo "If you need to check logs, please refer to /var/log/letsencrypt/letsencrypt.log"
     certbot certonly \
         --preferred-chain "ISRG Root X1" \
         --webroot --webroot-path $WEB_ROOT \
@@ -134,10 +135,10 @@ do
       #
       #################################
       echo "The certificate for $domain is about to expire soon."
-      echo "Starting Let's Encrypt renewal script..."
+      echo "Starting Let's Encrypt renewal script... If you need to check logs, please refer to /var/log/letsencrypt/letsencrypt.log"
       certbot certonly \
         --webroot --webroot-path $WEB_ROOT \
-        --keep-until-expiring \
+        --force-renewal \
         --text \
         -v \
         --email $EMAIL \
