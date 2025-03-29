@@ -109,32 +109,31 @@ do
         -d $domain
 
     ###################################
-    #
-    # Combine certs for HAProxy and
-    # Reload HAProxy
-    #
+    # Combine certs for HAProxy and Reload
     ###################################
     combine_certs $domain
 
   else
     ##################################
-    #
-    # Check How long cert is valid
-    #
+    # Check how long cert is valid
     ##################################
-    EXP=$(date -d "`openssl x509 -in $CERT_FILE -text -noout|grep "Not After"|cut -c 25-`" +%s)
+    EXP_DATE=$(openssl x509 -in "$CERT_FILE" -noout -enddate | cut -d= -f2)
+    if [ -z "$EXP_DATE" ]; then
+      echo "Error: Failed to parse expiry date for $domain."
+      continue
+    fi
+
+    EXP=$(date -d "$EXP_DATE" +%s 2>/dev/null)
     DATE_NOW=$(date -d "now" +%s)
     DAYS_EXP=$(echo \( $EXP - $DATE_NOW \) / 86400 |bc)
 
-    if [ "$DAYS_EXP" -gt "$EXP_LIMIT" ] ; then
+    if [ "$DAYS_EXP" -gt "$EXP_LIMIT" ]; then
       echo "$domain, no need for renewal ($DAYS_EXP days left)."
     else
       #################################
-      #
-      # Renew Certifcate
-      #
+      # Renew Certificate
       #################################
-      echo "The certificate for $domain is about to expire soon."
+      echo "The certificate for $domain is about to expire soon ($DAYS_EXP days left)."
       echo "Starting Let's Encrypt renewal script... If you need to check logs, please refer to /var/log/letsencrypt/letsencrypt.log"
       certbot certonly \
         --webroot --webroot-path $WEB_ROOT \
