@@ -19,6 +19,7 @@ services:
             - haproxy-config:/usr/local/etc/haproxy/
             - ${CERT_PATH}:/etc/haproxy/certs/
             - ${CERT_PATH}/challenge:/usr/share/nginx/html/
+            - ./logs:/host_logs
         container_name: "${HA_NAME}"
         restart: always
 

@@ -29,6 +29,9 @@ RUN echo '0 5 * * 0 root /usr/local/sbin/le-renew-haproxy >> /var/log/cron.log 2
 RUN chmod +x /etc/cron.d/cron-update-cert
 RUN touch /var/log/cron.log
 
+RUN echo '0 6 * * * root cp -rf /var/log/* /host_logs/' >> /etc/cron.d/cron-copy-logs
+RUN chmod +x /etc/cron.d/cron-copy-logs
+
 # tail 為了避免container完成退出
 # CMD haproxy -f /usr/local/etc/haproxy/haproxy.cfg && cron && tail -f /var/log/cron.log
 # 改成 supervisor 多進程單行CMD會出問題，有LOG卻沒更新
