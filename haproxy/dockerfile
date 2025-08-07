@@ -29,7 +29,10 @@ RUN echo '0 5 * * 0 root /usr/local/sbin/le-renew-haproxy >> /var/log/cron.log 2
 RUN chmod +x /etc/cron.d/cron-update-cert
 RUN touch /var/log/cron.log
 
-RUN echo '0 6 * * * root cp -rf /var/log/* /host_logs/' >> /etc/cron.d/cron-copy-logs
+# Copy log copying script and set up cron job
+COPY ./copy-logs.sh /usr/local/sbin/copy-logs.sh
+RUN chmod +x /usr/local/sbin/copy-logs.sh
+RUN echo '0 6 * * * root /usr/local/sbin/copy-logs.sh' >> /etc/cron.d/cron-copy-logs
 RUN chmod +x /etc/cron.d/cron-copy-logs
 
 # tail 為了避免container完成退出
