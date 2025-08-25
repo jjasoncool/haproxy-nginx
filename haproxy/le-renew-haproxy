@@ -10,9 +10,18 @@ export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # TODO: 直接讀取 CERT_LIST_FILE 了吧
 CERT_LIST_FILE="/etc/haproxy/cert-list.cfg"
-DOMAINS=(
-    all_domains
-)
+
+# Populate DOMAINS from cert-list.cfg (skip comments and empty lines).
+DOMAINS=()
+if [ -f "$CERT_LIST_FILE" ]; then
+  while read -r line; do
+    [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+    DOMAINS+=("$(basename "$line" .pem)")
+  done < "$CERT_LIST_FILE"
+else
+  # Fallback placeholder if cert-list not present
+  DOMAINS=(all_domains)
+fi
 
 EMAIL="forwork.jan@gmail.com"
 WEB_ROOT="/usr/share/nginx/html/"
@@ -129,6 +138,36 @@ do
 
     if [ "$DAYS_EXP" -gt "$EXP_LIMIT" ]; then
       echo "$domain, no need for renewal ($DAYS_EXP days left)."
+
+      # Even if not due for renewal, ensure HAProxy combined cert is up-to-date
+      live_full="/etc/letsencrypt/live/${domain}/fullchain.pem"
+      live_priv="/etc/letsencrypt/live/${domain}/privkey.pem"
+      combined="/etc/haproxy/certs/${domain}.pem"
+
+      # If combined missing, create it from live if available
+      if [ ! -f "$combined" ]; then
+        if [ -f "$live_full" ] && [ -f "$live_priv" ]; then
+          echo "Combined file missing for $domain, creating from live certs..."
+          combine_certs "$domain"
+        else
+          echo "Combined file missing and live certs not present for $domain, skipping."
+        fi
+      else
+        # If live exists, compare mtimes; update if live is newer
+        if [ -f "$live_full" ] && [ -f "$live_priv" ]; then
+          live_full_mtime=$(stat -c '%Y' "$live_full" 2>/dev/null || echo 0)
+          live_priv_mtime=$(stat -c '%Y' "$live_priv" 2>/dev/null || echo 0)
+          combined_mtime=$(stat -c '%Y' "$combined" 2>/dev/null || echo 0)
+          if [ "$live_full_mtime" -gt "$combined_mtime" ] || [ "$live_priv_mtime" -gt "$combined_mtime" ]; then
+            echo "Live certs for $domain are newer than combined file, updating combined..."
+            combine_certs "$domain"
+          else
+            echo "Combined cert for $domain is up-to-date."
+          fi
+        else
+          echo "Live cert files missing for $domain, nothing to update."
+        fi
+      fi
     else
       #################################
       # Renew Certificate
